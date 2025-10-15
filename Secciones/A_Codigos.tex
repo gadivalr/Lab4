@@ -1,3 +1,110 @@
 \section{Códigos}
+\begin{listing}[H]
+  \scriptsize
+  \begin{minted}{cpp}
+    // Inclusión de las librerías necesarias para la comunicación y los sensores.
+#include <Wire.h>     // Para la comunicación I2C (usada por el sensor BH1750).
+#include <DHT.h>      // Para el sensor de temperatura y humedad DHT11.
+#include <BH1750.h>   // Para el sensor de luz ambiental GY-30 (BH1750).
+#include <Nextion.h>  // Para comunicarse con la pantalla Nextion.
+
+// Definiciones para el sensor DHT11.
+#define DHTTYPE DHT11   // Se especifica que el tipo de sensor es DHT11.
+#define DHTPIN 9        // Se define que el pin de datos del DHT11 está conectado al pin digital 9 del Arduino.
+
+// Creación de los objetos para los sensores.
+DHT dht(DHTPIN, DHTTYPE); // Se inicializa el objeto 'dht' con el pin y el tipo definidos.
+BH1750 GY30;               // Se inicializa el objeto 'GY30' para el sensor de luz.
+
+// La función setup() se ejecuta una sola vez cuando el Arduino se enciende o se resetea.
+void setup() {
+  // Inicializa la comunicación serial a 9600 baudios. Es la velocidad a la que se comunicará con la pantalla Nextion.
+  Serial.begin(9600);
+  // Inicializa el sensor DHT.
+  dht.begin();
+
+  // Inicializa la comunicación con la pantalla Nextion (esta función podría venir de la librería Nextion).
+  nexInit();
+  // Inicializa el bus de comunicación I2C.
+  Wire.begin();
+  // Inicializa el sensor de luz BH1750.
+  GY30.begin();
+}
+
+// La función loop() se ejecuta repetidamente después de que setup() ha terminado.
+void loop() {
+  // Pequeña pausa de 100 milisegundos para estabilizar las lecturas y no saturar los sensores.
+  delay(100);
+  // Lee los valores de los sensores y los guarda en variables.
+  float hum1 = dht.readHumidity();      // Lee la humedad relativa (en %).
+  float temp1 = dht.readTemperature();  // Lee la temperatura (en °C).
+  int lux1 = GY30.readLightLevel();     // Lee el nivel de luz (en lux).
+
+  // Convierte los valores numéricos a tipo String para poder enviarlos a la pantalla.
+  String tempString = String(temp1, 1); // Convierte la temperatura a String, con 1 decimal.
+  String humString = String(hum1, 0);   // Convierte la humedad a String, sin decimales.
+  String luxString = String(lux1);      // Convierte el valor de lux a String.
+
+  // --- Envío de datos a los campos de texto de la pantalla Nextion ---
+
+  // Comando para actualizar el campo de texto "temp.txt" en la pantalla.
+  Serial.print("temp.txt=\"" + tempString); // Envía la primera parte del comando: temp.txt="24.5
+  Serial.write(176); // Envía el código ASCII del símbolo de grado '°'.
+  Serial.print("C\"");                       // Envía la 'C' y las comillas de cierre.
+  terminarComando();                       // Envía los tres bytes 0xFF para finalizar el comando.
+
+  // Comando para actualizar el campo de texto "hum.txt".
+  enviarComando("hum.txt=\"" + humString + "%\""); // Usa la función helper para enviar "hum.txt="50%""
+
+  // Comando para actualizar el campo de texto "lux.txt".
+  enviarComando("lux.txt=\"" + luxString + " lx\""); // Usa la función helper para enviar "lux.txt="1200 lx""
+
+  // --- Envío de datos a los gráficos (Waveform) de la pantalla Nextion ---
+
+  // Actualiza el gráfico de luminosidad (lux).
+  NexWaveform lumwave = NexWaveform(0, 4, "lumwave"); // Declara un objeto para el gráfico con ID de página 0, ID de componente 4, y nombre "lumwave".
+  int plotlux = map(lux1, 0, 20000, 0, 255);          // Mapea el valor de lux (0-20000) a la escala del gráfico (0-255).
+\end{minted}
+   \end{listing}
+
+\begin{listing}[H]
+  \scriptsize
+  \begin{minted}{cpp}
+   plotlux = constrain(plotlux, 0, 255);   // Se asegura que el valor no se salga del rango 0-255.
+  lumwave.addValue(0, plotlux);                      // Añade el nuevo valor al canal 0 del gráfico.
+
+  // Actualiza el gráfico de temperatura.
+  float temp10 = temp1 * 10.0;                       // Multiplica por 10 para trabajar con un entero y no perder el primer decimal.
+  int tempint = (int)temp10;                         // Convierte el valor a entero (ej: 24.5 -> 245).
+  NexWaveform tempwave = NexWaveform(0, 6, "tempwave"); // Declara el objeto para el gráfico de temperatura.
+  int plottemp = map(tempint, 0, 400, 0, 255);         // Mapea la temperatura (0.0-40.0 -> 0-400) a la escala del gráfico (0-255).
+  plottemp = constrain(plottemp, 0, 255);              // Asegura que el valor esté en el rango correcto.
+  tempwave.addValue(0, plottemp);                      // Añade el valor al gráfico.
+
+  // Actualiza el gráfico de humedad.
+  NexWaveform humwave = NexWaveform(0, 7, "humwave");  // Declara el objeto para el gráfico de humedad.
+  int plothum = map(hum1, 0, 100, 0, 255);             // Mapea la humedad (0-100%) a la escala del gráfico (0-255).
+  plothum = constrain(plothum, 0, 255);                // Asegura que el valor esté en el rango correcto.
+  humwave.addValue(0, plothum);                        // Añade el valor al gráfico.
+}
+
+// --- Funciones auxiliares (helpers) ---
+
+// Función para enviar un comando completo a la pantalla Nextion de una manera más limpia.
+void enviarComando(String cmd) {
+  Serial.print(cmd);     // Imprime la cadena de texto del comando.
+  terminarComando();     // Llama a la función que añade los bytes de finalización.
+}
+
+// Función que envía la secuencia de terminación de comando requerida por Nextion.
+void terminarComando() {
+  Serial.write(0xFF);    // Envía el primer byte de terminación.
+  Serial.write(0xFF);    // Envía el segundo byte de terminación.
+  Serial.write(0xFF);    // Envía el tercer byte de terminación.
+}
 
 
+  \end{minted}
+  \caption{Codigo Implementado}
+  \label{lst:cod-1}
+\end{listing}
