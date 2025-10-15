@@ -1,0 +1,59 @@
+% \documentclass[a4paper,12pt,oneside]{all-in-one} %% ONESIDE
+\documentclass[a4paper,12pt,twoside]{all-in-one} %% TWOSIDE
+
+\doctitle{Laboratorio 2}
+\docsubtitle{Tareas UdeC}
+
+\input{preamble}
+
+\usepackage{ebgaramond}
+\usepackage{subfiles}
+\usepackage{caption}
+\usepackage{subcaption}
+
+\usepackage{lipsum}
+
+\usepackage[outputdir=build]{minted}         % Bloques de código con colores
+
+\addto\captionsspanish{\renewcommand{\listtablename}{Índice de tablas}}
+\addto\captionsspanish{\renewcommand{\tablename}{Tabla}}
+\addto\captionsspanish{\renewcommand{\listingscaption}{Código}}
+\addto\captionsspanish{\providecommand*{\listingautorefname}{Cod.}}
+
+\usemintedstyle{catppuccin-latte}
+\definecolor{bg}{rgb}{0.95,0.95,0.92}
+\setminted{linenos=true, autogobble, bgcolor=bg, breaklines=true}
+
+\begin{document}
+
+% Interlineate, it can be changed.
+% \setlength{\baselineskip}{.70cm}
+
+\import{Secciones/}{0_Portada.tex}
+{
+  \hypersetup{hidelinks}
+  \tableofcontents
+}
+\clearpage
+\import{Secciones/}{1_Intro.tex}
+\import{Secciones/}{2_Marco.tex}
+\clearpage
+\import{Secciones/}{3_Diseño.tex}
+\clearpage
+\import{Secciones/}{4_Implementacion.tex}
+\clearpage
+\import{Secciones/}{5_Conclusion}
+\appendix
+\setcounter{listing}{0}
+\renewcommand{\thelisting}{\thesection\arabic{listing}}
+\setcounter{table}{0}
+\renewcommand{\thetable}{\thesection\arabic{table}}
+\setcounter{figure}{0}
+\renewcommand{\thefigure}{\thesection\arabic{figure}}
+\import{Secciones}{A_Codigos.tex}
+
+\clearpage
+\pagestyle{\auxsettings}
+\printbibliography[heading=bibintoc]
+
+\end{document}
