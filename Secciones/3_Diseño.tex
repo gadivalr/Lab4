@@ -83,3 +83,58 @@ nombre. Luego, se mapea el valor a al rango admitido por el HMI, que
 es entre $0-255$, a continuación, con la función \texttt{constraint} se
 asegura que el valor no se salga de este rango, y finalmente se envía el
 valor al HMI mediante el método \texttt{addValue}.
+
+\clearpage
+\subsection{Diseño de interfaz}
+
+Para el diseño de la interfaz grafica, se utilizaron 2 herramientas. Siendo la principal
+\texttt{Nextion Editor}, debido a que aqui se declaraban los distintos elementos para 
+cumplir con los requerimientos del laboratorio. En este caso se ideo que se mostraran 
+los valores de humedad, temperatura y luminosidad. Junto a un grafico que dependiendo 
+que valor se presionara mostrara la evolucion en el tiempo del elemento seleccionado.
+Ubicando botones encima del texto para mostrar los valores, se logro que la interfaz 
+cambiara al presionar los distintos valores.
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Diagramas/nextion.png}
+    \caption{Programa \texttt{Nextion}}
+    \label{fig:nextion}
+\end{figure}
+
+Como segundo programa, se utilizo \texttt{Canva}.
+Este se uso principalmente para el diseño de la interfaz, sirviendo de plantilla para 
+ubicar los botones y graficos. Agregando colores e imagenes que esten relacionadas 
+con el valor medido. Logrando las siguientes interfaces.
+
+\begin{figure}[h!]
+    \centering
+
+    % --- Fila superior: dos imágenes centradas ---
+    \begin{subfigure}[t]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Diagramas/1.png}
+        \caption{Interfaz para luminosidad.}
+        \label{fig:sub1}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Diagramas/2.png}
+        \caption{Interfaz para humedad.}
+        \label{fig:sub2}
+    \end{subfigure}
+    
+    % --- Espacio entre filas ---
+    \vskip1em
+    
+    % --- Fila inferior: una imagen centrada ---
+    \begin{subfigure}[t]{0.45\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Diagramas/3.png}
+        \caption{Interfaz para temperatura.}
+        \label{fig:sub3}
+    \end{subfigure}
+
+    \caption{Interfaces desarrolladas en \texttt{Canva}.}
+    \label{fig:tres_imagenes}
+\end{figure}
